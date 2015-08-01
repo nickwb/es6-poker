@@ -6,14 +6,16 @@ import Player from "./player";
 
 export default class Deal {
 	constructor(players, communityCards) {
-		if(players.length <= 1) {
-			throw 'You must have at least two players.';
-		}
-		if(communityCards.length !== 5) {
-			throw 'There are five community cards.';
-		}
 		this.players = players;
 		this.communityCards = communityCards;
+	}
+
+	addToCommunityCards(...cards) {
+		if(this.communityCards.length + cards.length > 5) {
+			throw 'Too many commnuity cards.'
+		}
+
+		this.communityCards = this.communityCards.concat(...cards);
 	}
 
 	getWinner() {
