@@ -33,8 +33,7 @@ export default class Deal {
 Deal.random = function(numPlayers) {
 	var cards = _.chain(Card.types)
 			.values()
-			.map(c => ({card: c, r: Math.random()}))
-			.sortBy(c => c.r).map(c => c.card)
+			.shuffle()
 			.first(5 + numPlayers * 2)
 			.value();
 
