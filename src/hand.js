@@ -2,8 +2,9 @@ import _ from 'underscore';
 import Card from './card';
 
 class HandType {
-	constructor(name) {
+	constructor(name, scoreWithKicker = false) {
 		this.name = name;
+		this.scoreWithKicker = scoreWithKicker;
 	}
 
 	doesHandMatch(hand) {
@@ -12,6 +13,20 @@ class HandType {
 
 	describeHand(hand) {
 		return this.describer(hand);
+	}
+
+	getScore(hand) {
+		// 4 bits each
+		let scoreComponents = [
+			this.baseScore,
+			hand.getMultipleRank(4),
+			hand.getMultipleRank(3),
+			hand.getMultipleRank(2, 0),
+			hand.getMultipleRank(2, 1),
+			this.scoreWithKicker ? hand.getKickerScore() : hand.getHighCard().rankScore()
+		];
+
+		return _.reduce(scoreComponents, (score, c) => (score << 4) | (c & 0xf), 0);
 	}
 }
 
@@ -33,9 +48,9 @@ class StraightFlush extends HandType {
 
 class FourOfAKind extends HandType {
 	constructor() { 
-		super('Four of a Kind');
+		super('Four of a Kind', true);
 		this.predicate = hand => hand.hasMultiples(4);
-		this.describer = hand => `${hand.getWordOfMultiple(4)}, ${hand.getHighCardWord()} High`;
+		this.describer = hand => `${hand.getWordOfMultiple(4)}, ${hand.getKickerWord()} Kicker`;
 	}
 }
 
@@ -51,7 +66,7 @@ class Flush extends HandType {
 	constructor() { 
 		super('Flush');
 		this.predicate = hand => hand.isFlush();
-		this.describer = hand => `${hand.cards[0].getSuitAsWord(true)}`;
+		this.describer = hand => `${hand.cards[0].getSuitAsWord(true)}, ${hand.getHighCardWord()} High`;
 	}
 }
 
@@ -65,25 +80,25 @@ class Straight extends HandType {
 
 class ThreeOfAKind extends HandType {
 	constructor() { 
-		super('Three of a Kind');
+		super('Three of a Kind', true);
 		this.predicate = hand => hand.hasMultiples(3);
-		this.describer = hand => `${hand.getWordOfMultiple(3)}, ${hand.getHighCardWord()} High`;
+		this.describer = hand => `${hand.getWordOfMultiple(3)}, ${hand.getKickerWord()} Kicker`;
 	}
 }
 
 class TwoPair extends HandType {
 	constructor() { 
-		super('Two Pair');
+		super('Two Pair', true);
 		this.predicate = hand => hand.hasMultiples(2, 2);
-		this.describer = hand => `${hand.getWordOfMultiple(2, 0)} and ${hand.getWordOfMultiple(2, 1)}, ${hand.getHighCardWord()} High`;
+		this.describer = hand => `${hand.getWordOfMultiple(2, 0)} and ${hand.getWordOfMultiple(2, 1)}, ${hand.getKickerWord()} Kicker`;
 	}
 }
 
 class OnePair extends HandType {
 	constructor() { 
-		super('One Pair');
+		super('One Pair', true);
 		this.predicate = hand => hand.hasMultiples(2, 1);
-		this.describer = hand => `${hand.getWordOfMultiple(2)}, ${hand.getHighCardWord()} High`;
+		this.describer = hand => `${hand.getWordOfMultiple(2)}, ${hand.getKickerWord()} Kicker`;
 	}
 }
 
@@ -137,16 +152,39 @@ export default class Hand {
 		return this.multiples[n] && this.multiples[n].length == m;
 	}
 
+	getMultipleRank(n, idx = 0) {
+		return (!this.multiples[n] || !this.multiples[n][idx]) ? 0 : this.multiples[n][idx][0].rankScore();
+	}
+
 	getWordOfMultiple(n, idx = 0) {
 		return this.multiples[n][idx][0].getRankAsWord(true);
 	}
-
+	
 	getHighCard() {
 		return this.cards[this.cards.length - 1];
 	}
 
 	getHighCardWord() {
 		return this.getHighCard().getRankAsWord();
+	}
+
+	getKicker() {
+		for(let i = this.cards.length - 1; i >= 0; i--) {
+			let c = this.cards[i];
+			if(this.multiples.ranks[c.rank]) { continue; }
+			return c;
+		}
+		return null;
+	}
+
+	getKickerScore() {
+		var k = this.getKicker();
+		return k ? k.rankScore() : 0;
+	}
+
+	getKickerWord() {
+		var k = this.getKicker();
+		return k ? k.getRankAsWord() : '';
 	}
 
 	getScore() {
@@ -161,7 +199,7 @@ export default class Hand {
 				return { 
 					name: t.name,
 					description: t.describeHand(this),
-					score: t.baseScore * 100 + this.getHighCard().rankScore()
+					score: t.getScore(this)
 				};
 			})
 			.max(t => t.score)
@@ -171,7 +209,7 @@ export default class Hand {
 
 function getMultiples(cards) {
 	var byRank = {},
-		multiples = {};
+		multiples = { ranks: {} };
 
 	_.each(cards, c => {
 		byRank[c.rank] = byRank[c.rank] || [];
@@ -179,12 +217,13 @@ function getMultiples(cards) {
 	});
 
 	_.each(byRank, (cards, rank) => {
-		_.each([2, 3, 4], k => {
-			if(cards.length === k) {
-				var m = (multiples[k] || []);
-				m.push(cards);
-				if(m.length > 1) {	m = _.sortBy(m, cards => cards[0].sortOrder());	}
-				multiples[k] = m;
+		_.each([2, 3, 4], count => {
+			if(cards.length === count) {
+				var set = (multiples[count] || []);
+				set.push(cards);
+				if(set.length > 1) { set = _.sortBy(set, cards => -cards[0].sortOrder()); }
+				multiples[count] = set;
+				multiples.ranks[rank] = count;
 			}
 		});
 	});

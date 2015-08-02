@@ -18,12 +18,15 @@ export default class Deal {
 		this.communityCards = this.communityCards.concat(...cards);
 	}
 
-	getWinner() {
-		return _.chain(this.players)
+	getWinners() {
+		let playerScores = _.chain(this.players)
 		 		.map(p => ({ player: p, bestHand: _.max(p.getHands(this.communityCards), h => h.getScore().score)}))
 		 		.map(p => _.extend(p, { bestScore: p.bestHand.getScore() }))
-		 		.max(p => p.bestScore.score)
 		 		.value();
+
+ 		let winningScore = _.chain(playerScores).map(p => p.bestScore.score).max();
+
+ 		return _.filter(playerScores, p => p.bestScore.score == winningScore);
 	}
 }
 
