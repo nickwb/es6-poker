@@ -20,13 +20,13 @@ export default class Deal {
 
 	getWinners() {
 		let playerScores = _.chain(this.players)
-		 		.map(p => ({ player: p, bestHand: _.max(p.getHands(this.communityCards), h => h.getScore().score)}))
+		 		.map(p => ({ player: p, bestHand: _.max(p.getHands(this.communityCards), h => h.getScore().points)}))
 		 		.map(p => _.extend(p, { bestScore: p.bestHand.getScore() }))
 		 		.value();
 
- 		let winningScore = _.chain(playerScores).map(p => p.bestScore.score).max();
+ 		let winningScore = _.chain(playerScores).map(p => p.bestScore.points).max();
 
- 		return _.filter(playerScores, p => p.bestScore.score == winningScore);
+ 		return _.filter(playerScores, p => p.bestScore.points == winningScore);
 	}
 }
 

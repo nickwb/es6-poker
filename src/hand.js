@@ -15,7 +15,7 @@ class HandType {
 		return this.describer(hand);
 	}
 
-	getScore(hand) {
+	getScorePoints(hand) {
 		// 4 bits each
 		let scoreComponents = [
 			this.baseScore,
@@ -199,10 +199,10 @@ export default class Hand {
 				return { 
 					name: t.name,
 					description: t.describeHand(this),
-					score: t.getScore(this)
+					points: t.getScorePoints(this)
 				};
 			})
-			.max(t => t.score)
+			.max(t => t.points)
 			.value();
 	}
 }

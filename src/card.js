@@ -34,6 +34,10 @@ export default class Card {
 		return this.rank + this.suit;
 	}
 
+	valueOf() {
+		return this.toString();
+	}
+
 	rankScore() {
 		return Ranks.scores[this.rank];
 	}
