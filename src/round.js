@@ -30,8 +30,12 @@ export default class Round {
 
 		let improved = [];
 
-		for(let extras of pickIndices(unseen.length, numExtraCards)) {
-			let combinedSet = seen.concat(..._.map(extras, e => unseen[e]));
+		let counter = 0;
+
+		for(let extras of pickIndices(20, 4)) {
+			counter++;
+			//let combinedSet = seen.concat(..._.map(extras, e => unseen[e]));
+			//improved.push(1);
 /*			for(let handSet of pickIndices(combinedSet.length, 5)) {
 				let hand = new Hand(..._.map(handSet, i => combinedSet[i]));
 				let handScore = hand.getScore();
@@ -40,6 +44,8 @@ export default class Round {
 				}
 			}*/
 		}
+
+		console.log(counter);
 
 		//console.log(improved);
 	}
@@ -62,20 +68,26 @@ export default class Round {
 }
 
 function* pickIndices(count, n) {
-	let stack = [];
-	_.range(n).forEach(x => stack.push(0));
+	console.log(count);
+	let indices = [];
+	_.range(n).forEach(x => indices.push(n - (x + 1)));
 
 	for(;;) {
-		if(_.uniq(stack).length === n) {
-			yield stack.slice(0);
-		}
+		var y = indices.slice(0);
+		console.log(y);
+		yield y;
 
-		stack[0]++;
+		indices[0]++;
 		for(let i = 0; i < n; i++) {
-			if(stack[i] === count) {
-				if(i === n-1) { return; }
-				stack[i + 1]++;
-				stack[i] = 0;
+			if(indices[i] >= count) {
+				if(i === n - 1) { return; }
+				indices[i + 1]++;
+			}
+		}
+		for(let i = n-1; i >= 0; i--) {
+			if(indices[i] >= count) {
+				if(i === n - 1) { return; }
+				indices[i] = indices[i + 1] + 1;
 			}
 		}
 	}
