@@ -32,7 +32,7 @@ export default class Round {
 
 		let counter = 0;
 
-		for(let extras of pickIndices(20, 4)) {
+		for(let extras of pickIndices(10, 2)) {
 			counter++;
 			//let combinedSet = seen.concat(..._.map(extras, e => unseen[e]));
 			//improved.push(1);
@@ -78,17 +78,24 @@ function* pickIndices(count, n) {
 		yield y;
 
 		indices[0]++;
-		for(let i = 0; i < n; i++) {
-			if(indices[i] >= count) {
-				if(i === n - 1) { return; }
-				indices[i + 1]++;
+		for(;;) {
+			let stable = true;
+			for(let i = 0; i < n; i++) {
+				if(indices[i] >= count) {
+					if(i === n - 1) { return; }
+					indices[i + 1]++;
+					stable = false;
+				}
 			}
-		}
-		for(let i = n-1; i >= 0; i--) {
-			if(indices[i] >= count) {
-				if(i === n - 1) { return; }
-				indices[i] = indices[i + 1] + 1;
+			for(let i = n-1; i >= 0; i--) {
+				if(indices[i] >= count) {
+					if(i === n - 1) { return; }
+					indices[i] = indices[i + 1] + 1;
+					stable = false;
+				}
 			}
+
+			if(stable) { break; }
 		}
 	}
 }
