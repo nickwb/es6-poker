@@ -30,24 +30,18 @@ export default class Round {
 
 		let improved = [];
 
-		let counter = 0;
-
-		for(let extras of pickIndices(10, 2)) {
-			counter++;
-			//let combinedSet = seen.concat(..._.map(extras, e => unseen[e]));
-			//improved.push(1);
-/*			for(let handSet of pickIndices(combinedSet.length, 5)) {
-				let hand = new Hand(..._.map(handSet, i => combinedSet[i]));
+		for(let extras of getCombinations(unseen, 2)) {
+			let combinedSet = seen.concat(...extras);
+			for(let handSet of getCombinations(combinedSet, 5)) {
+				let hand = new Hand(...handSet);
 				let handScore = hand.getScore();
-				if(handScore.points > currentBest.points) {
+				if(handScore.points > currentBest.score.points) {
 					improved.push({ hand: hand, score: handScore });
 				}
-			}*/
+			}
 		}
 
-		console.log(counter);
-
-		//console.log(improved);
+		return improved;
 	}
 
 	getPossibleCurrentBetterHands() {
@@ -67,28 +61,25 @@ export default class Round {
 	}
 }
 
-function* pickIndices(count, n) {
-	console.log(count);
+function* getCombinations(list, n) {
 	let indices = [];
 	_.range(n).forEach(x => indices.push(n - (x + 1)));
 
 	for(;;) {
-		var y = indices.slice(0);
-		console.log(y);
-		yield y;
+		yield _.map(indices, i => list[i]);
 
 		indices[0]++;
 		for(;;) {
 			let stable = true;
 			for(let i = 0; i < n; i++) {
-				if(indices[i] >= count) {
+				if(indices[i] >= list.length) {
 					if(i === n - 1) { return; }
 					indices[i + 1]++;
 					stable = false;
 				}
 			}
 			for(let i = n-1; i >= 0; i--) {
-				if(indices[i] >= count) {
+				if(indices[i] >= list.length) {
 					if(i === n - 1) { return; }
 					indices[i] = indices[i + 1] + 1;
 					stable = false;
