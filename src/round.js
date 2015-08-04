@@ -110,7 +110,7 @@ function* getCombinations(list, n, goldenIndices = -1) {
 			if(stable) { break; }
 		}
 
-		if(goldenIndices >= 0) {
+		if(goldenIndices !== -1) {
 			let valid = false;
 			for(let i = 0; i < n; i++) {
 				if(indices[i] <= goldenIndices) {
