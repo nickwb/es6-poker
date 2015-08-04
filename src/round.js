@@ -32,14 +32,10 @@ export default class Round {
 
 		let scoreMap = {};
 
-		for(let extras of getCombinations(unseen, 2)) {
+		for(let extras of getCombinations(unseen, 2, forcePocket ? 1 : -1)) {
 			let combinedSet = seen.concat(...extras);
 			for(let cardArray of getCombinations(combinedSet, 5)) {
 				let hand = makeHand(cardArray);
-				
-				if(forcePocket && !this.doesHandUsePocket(hand.hand)) {
-					continue;
-				}
 				
 				if(hand.score.points >= currentBest.score.points) {
 					let truncated = Hand.truncateScore(hand.score.points);
@@ -72,16 +68,8 @@ export default class Round {
 
 	}
 
-	doesHandUsePocket(hand) {
-		if(!_.any(hand.cards, c => this.pocketMap[c.toString()])) {
-			return false;
-		}
-
-		return true;
-	}
-
 	getSeenCards() {
-		return this.communityCards.concat(...this.pocket);
+		return this.pocket.concat(...this.communityCards);
 	}
 
 	getUnseenCards() {
@@ -94,7 +82,7 @@ function makeHand(cardArray) {
 	return { hand: h, score: h.getScore() };
 }
 
-function* getCombinations(list, n) {
+function* getCombinations(list, n, goldenIndices = -1) {
 	let indices = [];
 	_.range(n).forEach(x => indices.push(n - (x + 1)));
 
@@ -120,6 +108,18 @@ function* getCombinations(list, n) {
 			}
 
 			if(stable) { break; }
+		}
+
+		if(goldenIndices >= 0) {
+			let valid = false;
+			for(let i = 0; i < n; i++) {
+				if(indices[i] <= goldenIndices) {
+					valid = true;
+					break;
+				}
+			}
+
+			if(!valid) { return; }
 		}
 	}
 }
