@@ -28,6 +28,14 @@ class HandType {
 
 		return _.reduce(scoreComponents, (score, c) => (score << 4) | (c & 0xf), 0);
 	}
+
+	static truncateScoreToHandType(score) {
+		return 0xf00000 & score;
+	}
+
+	static truncateScoreToMultipleRanks(score) {
+		return 0xfffff0 & score;
+	}
 }
 
 class RoyalFlush extends HandType {
@@ -205,6 +213,10 @@ export default class Hand {
 			.max(t => t.points)
 			.value();
 	}
+
+	static truncateScore(score) {
+		return HandType.truncateScoreToMultipleRanks(score);
+	} 
 }
 
 function getMultiples(cards) {

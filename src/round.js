@@ -8,6 +8,9 @@ export default class Round {
 	constructor(...pocketCards) {
 		this.pocket = _.sortBy(pocketCards, p => p.sortOrder());
 		this.communityCards = [];
+
+		this.pocketMap = {};
+		_.each(pocketCards, p => this.pocketMap[p.toString()] = true);
 	}
 
 	addCommunityCards(...cards) {
@@ -17,31 +20,48 @@ export default class Round {
 	getPlayerCurrentBestHand() {
 		let combos = combo.combination(this.getSeenCards(), 5);
 		return _.chain(combos.toArray())
-				.map(h => new Hand(...h))
-				.map(h => ({ hand: h, score: h.getScore() }))
+				.map(h => makeHand(h))
 				.max(h => h.score.points)
 				.value();
 	}
 
-	getPlayerImprovedHands(numExtraCards) {
+	getPlayerImprovedHands(numExtraCard, forcePocket = true) {
 		let seen = this.getSeenCards();
 		let unseen = this.getUnseenCards();
 		let currentBest = this.getPlayerCurrentBestHand();
 
-		let improved = [];
+		let scoreMap = {};
 
 		for(let extras of getCombinations(unseen, 2)) {
 			let combinedSet = seen.concat(...extras);
-			for(let handSet of getCombinations(combinedSet, 5)) {
-				let hand = new Hand(...handSet);
-				let handScore = hand.getScore();
-				if(handScore.points > currentBest.score.points) {
-					improved.push({ hand: hand, score: handScore });
+			for(let cardArray of getCombinations(combinedSet, 5)) {
+				let hand = makeHand(cardArray);
+				
+				if(forcePocket && !this.doesHandUsePocket(hand.hand)) {
+					continue;
+				}
+				
+				if(hand.score.points >= currentBest.score.points) {
+					let truncated = Hand.truncateScore(hand.score.points);
+					let tier = scoreMap[truncated] || {bestMember: null, bestPoints: 0, numMembers: 0};
+					tier.numMembers++;
+					if(hand.score.points > tier.bestPoints) {
+						tier.bestMember = hand;
+						tier.bestPoints = hand.score.points;
+					}
+
+					scoreMap[truncated] = tier;
 				}
 			}
 		}
 
-		return improved;
+		let result = _.chain(scoreMap)
+					  .keys()
+					  .sortBy(x => -x)
+					  .map(x => scoreMap[x])
+					  .value();
+
+		return result;
 	}
 
 	getPossibleCurrentBetterHands() {
@@ -52,6 +72,14 @@ export default class Round {
 
 	}
 
+	doesHandUsePocket(hand) {
+		if(!_.any(hand.cards, c => this.pocketMap[c.toString()])) {
+			return false;
+		}
+
+		return true;
+	}
+
 	getSeenCards() {
 		return this.communityCards.concat(...this.pocket);
 	}
@@ -59,6 +87,11 @@ export default class Round {
 	getUnseenCards() {
 		return _.without(Card.types, ...this.getSeenCards());
 	}
+}
+
+function makeHand(cardArray) {
+	let h = new Hand(...cardArray);
+	return { hand: h, score: h.getScore() };
 }
 
 function* getCombinations(list, n) {
