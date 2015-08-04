@@ -37,5 +37,5 @@ import Deck from "./deck";
 
 	console.log('The following improved hands are possible:');
 	let improved = r.getPlayerImprovedHands(2);
-	_.each(improved, i => console.log(`${i.hand}: ${best.score.name} (${best.score.description}).`));
+	_.each(improved, i => console.log(`${i.hand}: ${i.score.name} (${i.score.description}).`));
 }
