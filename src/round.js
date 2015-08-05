@@ -18,8 +18,8 @@ export default class Round {
 	}
 
 	getPlayerCurrentBestHand() {
-		let combos = combo.combination(this.getSeenCards(), 5);
-		return _.chain(combos.toArray())
+		let combos = evaluateArray(getCombinations(this.getSeenCards(), 5));
+		return _.chain(combos)
 				.map(h => makeHand(h))
 				.max(h => h.score.points)
 				.value();
@@ -61,7 +61,24 @@ export default class Round {
 	}
 
 	getPossibleCurrentBetterHands() {
+		let unseen = this.getUnseenCards();
+		let currentBest = this.getPlayerCurrentBestHand();
 
+		let better = [];
+
+		for(let otherPocket of getCombinations(unseen, 2)) {
+			let otherSet = this.communityCards.concat(...otherPocket);
+
+			for(let cardArray of getCombinations(otherSet, 5)) {
+				let hand = makeHand(cardArray);
+
+				if(hand.score.points > currentBest.score.points) {
+					better.push(hand);
+				}
+			}
+		}
+
+		return _.sortBy(better, h => -h.score.points);
 	}
 
 	getPossibleChasingHands(numExtraCards) {
@@ -80,6 +97,12 @@ export default class Round {
 function makeHand(cardArray) {
 	let h = new Hand(...cardArray);
 	return { hand: h, score: h.getScore() };
+}
+
+function evaluateArray(iterable) {
+	var result = [];
+	for(let x of iterable) { result.push(x); }
+	return result;
 }
 
 function* getCombinations(list, n, goldenIndices = -1) {
