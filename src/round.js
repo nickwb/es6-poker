@@ -1,6 +1,6 @@
 import _ from "underscore";
-import combo from "js-combinatorics";
 
+import combo from "./combinatorics";
 import Card from "./card";
 import Hand from "./hand";
 
@@ -18,23 +18,23 @@ export default class Round {
 	}
 
 	getPlayerCurrentBestHand() {
-		let combos = evaluateArray(getCombinations(this.getSeenCards(), 5));
+		let combos = combo.getCombinations(this.getSeenCards(), 5).toArray();
 		return _.chain(combos)
 				.map(h => new Hand(h))
 				.max(h => h.score().points)
 				.value();
 	}
 
-	getPlayerImprovedHands(numExtraCard, forcePocket = true) {
+	getPlayerImprovedHands(numExtraCard) {
 		let seen = this.getSeenCards();
 		let unseen = this.getUnseenCards();
 		let currentBest = this.getPlayerCurrentBestHand();
 
 		let scoreMap = {};
 
-		for(let extras of getCombinations(unseen, 2, forcePocket ? 1 : -1)) {
+		for(let extras of combo.getCombinationsM(unseen, 2, 1)) {
 			let combinedSet = seen.concat(...extras);
-			for(let cardArray of getCombinations(combinedSet, 5)) {
+			for(let cardArray of combo.getCombinations(combinedSet, 5)) {
 				let hand = new Hand(cardArray);
 
 				if(hand.score().points >= currentBest.score().points) {
@@ -65,10 +65,10 @@ export default class Round {
 
 		let better = [];
 
-		for(let otherPocket of getCombinations(unseen, 2)) {
+		for(let otherPocket of combo.getCombinations(unseen, 2)) {
 			let otherSet = this.communityCards.concat(...otherPocket);
 
-			for(let cardArray of getCombinations(otherSet, 5)) {
+			for(let cardArray of combo.getCombinations(otherSet, 5)) {
 				let hand = new Hand(cardArray);
 
 				if(hand.score().points > currentBest.score().points) {
@@ -90,53 +90,5 @@ export default class Round {
 
 	getUnseenCards() {
 		return _.without(Card.types, ...this.getSeenCards());
-	}
-}
-
-function evaluateArray(iterable) {
-	var result = [];
-	for(let x of iterable) { result.push(x); }
-	return result;
-}
-
-function* getCombinations(list, n, goldenIndices = -1) {
-	let indices = [];
-	_.range(n).forEach(x => indices.push(n - (x + 1)));
-
-	for(;;) {
-		yield _.map(indices, i => list[i]);
-
-		indices[0]++;
-		for(;;) {
-			let stable = true;
-			for(let i = 0; i < n; i++) {
-				if(indices[i] >= list.length) {
-					if(i === n - 1) { return; }
-					indices[i + 1]++;
-					stable = false;
-				}
-			}
-			for(let i = n-1; i >= 0; i--) {
-				if(indices[i] >= list.length) {
-					if(i === n - 1) { return; }
-					indices[i] = indices[i + 1] + 1;
-					stable = false;
-				}
-			}
-
-			if(stable) { break; }
-		}
-
-		if(goldenIndices !== -1) {
-			let valid = false;
-			for(let i = 0; i < n; i++) {
-				if(indices[i] <= goldenIndices) {
-					valid = true;
-					break;
-				}
-			}
-
-			if(!valid) { return; }
-		}
 	}
 }

@@ -1,6 +1,6 @@
 import _ from "underscore";
-import combo from "js-combinatorics";
 
+import combo from "./combinatorics";
 import Hand from "./hand";
 
 export default class Player {
@@ -18,7 +18,7 @@ export default class Player {
 	}
 
 	getHands(communityCards) {
-		let combos = combo.combination(this.pocket.concat(...communityCards), 5);
+		let combos = combo.getCombinations(this.pocket.concat(...communityCards), 5);
 		return _.map(combos.toArray(), h => new Hand(h));
 	}
 }

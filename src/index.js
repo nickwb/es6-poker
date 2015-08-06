@@ -35,10 +35,10 @@ import Deck from "./deck";
 	let best = r.getPlayerCurrentBestHand();
 	console.log(`The best hand you can currently make is: ${best.score()}.`);
 
-	// let better = r.getPossibleCurrentBetterHands();
-	// console.log(`There are ${better.length} pockets which can beat you.`);
-	//
-	// _.each(better, b => console.log(`${b}: ${b.score()}`));
+	let better = r.getPossibleCurrentBetterHands();
+	console.log(`There are ${better.length} pockets which can beat you.`);
+
+	_.each(better, b => console.log(`${b}: ${b.score()}`));
 
 	// console.log('The following improved hands are possible:');
 	// let improved = r.getPlayerImprovedHands(2);
