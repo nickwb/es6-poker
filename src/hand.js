@@ -153,16 +153,50 @@ class ScoreInfo {
 	}
 }
 
+function getMultiples(cards) {
+    var byRank = {},
+        multiples = { ranks: {} };
+
+    _.each(cards, c => {
+        byRank[c.rank] = byRank[c.rank] || [];
+        byRank[c.rank].push(c);
+    });
+
+    _.each(byRank, (cards, rank) => {
+        _.each([2, 3, 4], count => {
+            if(cards.length === count) {
+                var set = (multiples[count] || []);
+                set.push(cards);
+                if(set.length > 1) { set = _.sortBy(set, cards => -cards[0].sortOrder()); }
+                multiples[count] = set;
+                multiples.ranks[rank] = count;
+            }
+        });
+    });
+
+    return multiples;
+}
+
 export default class Hand {
 
-    constructor(cards) {
+    constructor(cards, pocket = null) {
         this.cards = _.sortBy(cards, c => c.sortOrder());
         this.multiples = getMultiples(this.cards);
         this._score = null;
+		this._pocket = pocket;
     }
 
+	setPocket(pocket) {
+		this._pocket = pocket;
+	}
+
+	isCardInPocket(card) {
+		return this._pocket && this._pocket.contains(card);
+	}
+
     toString() {
-        return this.cards.join(', ');
+        let inPocket = c => this.isCardInPocket(c) ? `[${c}]` : `${c}`;
+		return _.map(this.cards, inPocket).join(' ');
     }
 
     isFullHand() {
@@ -217,39 +251,13 @@ export default class Hand {
     }
 
     score() {
-
         if(this._score === null) {
             this._score = _.chain(HandTypes)
                 .map(t => new ScoreInfo(this, t))
                 .max(t => t.points)
                 .value();
         }
-
         return this._score;
     }
 
-}
-
-function getMultiples(cards) {
-    var byRank = {},
-        multiples = { ranks: {} };
-
-    _.each(cards, c => {
-        byRank[c.rank] = byRank[c.rank] || [];
-        byRank[c.rank].push(c);
-    });
-
-    _.each(byRank, (cards, rank) => {
-        _.each([2, 3, 4], count => {
-            if(cards.length === count) {
-                var set = (multiples[count] || []);
-                set.push(cards);
-                if(set.length > 1) { set = _.sortBy(set, cards => -cards[0].sortOrder()); }
-                multiples[count] = set;
-                multiples.ranks[rank] = count;
-            }
-        });
-    });
-
-    return multiples;
 }

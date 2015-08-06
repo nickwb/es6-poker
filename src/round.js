@@ -2,15 +2,13 @@ import _ from "underscore";
 
 import combo from "./combinatorics";
 import Card from "./card";
+import Pocket from "./pocket";
 import Hand from "./hand";
 
 export default class Round {
-	constructor(...pocketCards) {
-		this.pocket = _.sortBy(pocketCards, p => p.sortOrder());
+	constructor(pocket) {
+		this.pocket = pocket;
 		this.communityCards = [];
-
-		this.pocketMap = {};
-		_.each(pocketCards, p => this.pocketMap[p.toString()] = true);
 	}
 
 	addCommunityCards(...cards) {
@@ -20,7 +18,7 @@ export default class Round {
 	getPlayerCurrentBestHand() {
 		let combos = combo.getCombinations(this.getSeenCards(), 5).toArray();
 		return _.chain(combos)
-				.map(h => new Hand(h))
+				.map(h => new Hand(h, this.pocket))
 				.max(h => h.score().points)
 				.value();
 	}
@@ -35,7 +33,7 @@ export default class Round {
 		for(let extras of combo.getCombinationsM(unseen, 2, 1)) {
 			let combinedSet = seen.concat(...extras);
 			for(let cardArray of combo.getCombinations(combinedSet, 5)) {
-				let hand = new Hand(cardArray);
+				let hand = new Hand(cardArray, this.pocket);
 
 				if(hand.score().points >= currentBest.score().points) {
 					let truncated = hand.score().truncate();
@@ -65,11 +63,12 @@ export default class Round {
 
 		let better = [];
 
-		for(let otherPocket of combo.getCombinations(unseen, 2)) {
-			let otherSet = this.communityCards.concat(...otherPocket);
+		for(let pocketCards of combo.getCombinations(unseen, 2)) {
+			let pocket = new Pocket(pocketCards);
+			let set = this.communityCards.concat(pocket.cards);
 
-			for(let cardArray of combo.getCombinations(otherSet, 5)) {
-				let hand = new Hand(cardArray);
+			for(let cardArray of combo.getCombinations(set, 5)) {
+				let hand = new Hand(cardArray, pocket);
 
 				if(hand.score().points > currentBest.score().points) {
 					better.push(hand);
@@ -85,7 +84,7 @@ export default class Round {
 	}
 
 	getSeenCards() {
-		return this.pocket.concat(...this.communityCards);
+		return this.pocket.cards.concat(...this.communityCards);
 	}
 
 	getUnseenCards() {

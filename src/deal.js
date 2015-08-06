@@ -2,6 +2,8 @@ import _ from 'underscore';
 
 import Hand from "./hand";
 import Card from "./card";
+import Pocket from "./pocket";
+import Deck from "./deck";
 import Player from "./player";
 
 export default class Deal {
@@ -30,19 +32,12 @@ export default class Deal {
 }
 
 Deal.random = function(numPlayers) {
-	var cards = _.chain(Card.types)
-			.values()
-			.shuffle()
-			.first(5 + numPlayers * 2)
-			.value();
-
-	var players = [];
+	let deck = Deck.random();
+	let players = [];
 
 	for(let i = 0; i < numPlayers; i++) {
-		var p = new Player(`Player ${i+1}`);
-		p.setPocket([cards[i*2], cards[1 + i*2]]);
-		players.push(p);
+		players.push(new Player(`Player ${i+1}`, new Pocket(deck.deal(2))));
 	}
 
-	return new Deal(players, cards.slice(numPlayers * 2, numPlayers*2 + 5))
+	return new Deal(players, deck.deal(5));
 };
