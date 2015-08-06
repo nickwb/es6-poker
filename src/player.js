@@ -9,7 +9,7 @@ export default class Player {
 		this.pocket = [];
 	}
 
-	setPocket(...cards) {
+	setPocket(cards) {
 		if(cards.length !== 2) {
 			throw 'A pocket is two cards.';
 		}
@@ -17,8 +17,8 @@ export default class Player {
 		this.pocket = cards;
 	}
 
-	getHands(...communityCards) {
+	getHands(communityCards) {
 		let combos = combo.combination(this.pocket.concat(...communityCards), 5);
-		return _.map(combos.toArray(), h => new Hand(...h));
+		return _.map(combos.toArray(), h => new Hand(h));
 	}
 }

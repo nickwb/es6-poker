@@ -10,7 +10,7 @@ export default class Deal {
 		this.communityCards = communityCards;
 	}
 
-	addToCommunityCards(...cards) {
+	addToCommunityCards(cards) {
 		if(this.communityCards.length + cards.length > 5) {
 			throw 'Too many commnuity cards.'
 		}
@@ -20,13 +20,12 @@ export default class Deal {
 
 	getWinners() {
 		let playerScores = _.chain(this.players)
-		 		.map(p => ({ player: p, bestHand: _.max(p.getHands(this.communityCards), h => h.getScore().points)}))
-		 		.map(p => _.extend(p, { bestScore: p.bestHand.getScore() }))
+		 		.map(p => ({ player: p, bestHand: _.max(p.getHands(this.communityCards), h => h.score().points)}))
 		 		.value();
 
- 		let winningScore = _.chain(playerScores).map(p => p.bestScore.points).max();
+ 		let winningScore = _.chain(playerScores).map(p => p.bestHand.score().points).max();
 
- 		return _.filter(playerScores, p => p.bestScore.points == winningScore);
+ 		return _.filter(playerScores, p => p.bestHand.score().points == winningScore);
 	}
 }
 
@@ -41,7 +40,7 @@ Deal.random = function(numPlayers) {
 
 	for(let i = 0; i < numPlayers; i++) {
 		var p = new Player(`Player ${i+1}`);
-		p.setPocket(cards[i*2], cards[1 + i*2]);
+		p.setPocket([cards[i*2], cards[1 + i*2]]);
 		players.push(p);
 	}
 

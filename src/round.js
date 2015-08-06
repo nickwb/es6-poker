@@ -20,8 +20,8 @@ export default class Round {
 	getPlayerCurrentBestHand() {
 		let combos = evaluateArray(getCombinations(this.getSeenCards(), 5));
 		return _.chain(combos)
-				.map(h => makeHand(h))
-				.max(h => h.score.points)
+				.map(h => new Hand(h))
+				.max(h => h.score().points)
 				.value();
 	}
 
@@ -35,15 +35,14 @@ export default class Round {
 		for(let extras of getCombinations(unseen, 2, forcePocket ? 1 : -1)) {
 			let combinedSet = seen.concat(...extras);
 			for(let cardArray of getCombinations(combinedSet, 5)) {
-				let hand = makeHand(cardArray);
-				
-				if(hand.score.points >= currentBest.score.points) {
-					let truncated = Hand.truncateScore(hand.score.points);
-					let tier = scoreMap[truncated] || {bestMember: null, bestPoints: 0, numMembers: 0};
+				let hand = new Hand(cardArray);
+
+				if(hand.score().points >= currentBest.score().points) {
+					let truncated = hand.score().truncate();
+					let tier = scoreMap[truncated] || {bestMember: null, numMembers: 0};
 					tier.numMembers++;
-					if(hand.score.points > tier.bestPoints) {
+					if(tier.bestMember === null || hand.score().points > tier.bestMember.score().points) {
 						tier.bestMember = hand;
-						tier.bestPoints = hand.score.points;
 					}
 
 					scoreMap[truncated] = tier;
@@ -70,15 +69,15 @@ export default class Round {
 			let otherSet = this.communityCards.concat(...otherPocket);
 
 			for(let cardArray of getCombinations(otherSet, 5)) {
-				let hand = makeHand(cardArray);
+				let hand = new Hand(cardArray);
 
-				if(hand.score.points > currentBest.score.points) {
+				if(hand.score().points > currentBest.score().points) {
 					better.push(hand);
 				}
 			}
 		}
 
-		return _.sortBy(better, h => -h.score.points);
+		return _.sortBy(better, h => -h.score().points);
 	}
 
 	getPossibleChasingHands(numExtraCards) {
@@ -92,11 +91,6 @@ export default class Round {
 	getUnseenCards() {
 		return _.without(Card.types, ...this.getSeenCards());
 	}
-}
-
-function makeHand(cardArray) {
-	let h = new Hand(...cardArray);
-	return { hand: h, score: h.getScore() };
 }
 
 function evaluateArray(iterable) {
