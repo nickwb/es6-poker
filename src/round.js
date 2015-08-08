@@ -4,6 +4,7 @@ import combo from "./combinatorics";
 import Card from "./card";
 import Pocket from "./pocket";
 import Hand from "./hand";
+import HandOutlook from "./outlook";
 
 export default class Round {
 	constructor(pocket) {
@@ -28,40 +29,24 @@ export default class Round {
 		let unseen = this.getUnseenCards();
 		let currentBest = this.getPlayerCurrentBestHand();
 
-		let scoreMap = {};
+		let outlook = new HandOutlook(currentBest.score().points);
 
 		for(let extras of combo.getCombinationsM(unseen, 2, 1)) {
 			let combinedSet = seen.concat(...extras);
 			for(let cardArray of combo.getCombinations(combinedSet, 5)) {
 				let hand = new Hand(cardArray, this.pocket);
-
-				if(hand.score().points >= currentBest.score().points) {
-					let truncated = hand.score().truncate();
-					let tier = scoreMap[truncated] || {bestMember: null, numMembers: 0};
-					tier.numMembers++;
-					if(tier.bestMember === null || hand.score().points > tier.bestMember.score().points) {
-						tier.bestMember = hand;
-					}
-
-					scoreMap[truncated] = tier;
-				}
+				outlook.addCandidateHand(hand);
 			}
 		}
 
-		let result = _.chain(scoreMap)
-					  .keys()
-					  .sortBy(x => -x)
-					  .map(x => scoreMap[x])
-					  .value();
-
-		return result;
+		return outlook;
 	}
 
 	getPossibleCurrentBetterHands() {
 		let unseen = this.getUnseenCards();
 		let currentBest = this.getPlayerCurrentBestHand();
 
-		let better = [];
+		let outlook = new HandOutlook(currentBest.score().points);
 
 		for(let pocketCards of combo.getCombinations(unseen, 2)) {
 			let pocket = new Pocket(pocketCards);
@@ -69,14 +54,11 @@ export default class Round {
 
 			for(let cardArray of combo.getCombinations(set, 5)) {
 				let hand = new Hand(cardArray, pocket);
-
-				if(hand.score().points > currentBest.score().points) {
-					better.push(hand);
-				}
+				outlook.addCandidateHand(hand);
 			}
 		}
 
-		return _.sortBy(better, h => -h.score().points);
+		return outlook;
 	}
 
 	getPossibleChasingHands(numExtraCards) {
