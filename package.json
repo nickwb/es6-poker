@@ -1,5 +1,5 @@
 {
-  "name": "pokermath",
+  "name": "es6-poker",
   "version": "0.0.1",
   "description": "Calculate math for poker",
   "author": "Nick Young <nick@nickwb.net>",
@@ -15,7 +15,10 @@
     "url": ""
   },
   "bugs": {
-    "url": "h"
+    "url": ""
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel/register"
   },
   "keywords": [
     "poker"
@@ -24,13 +27,15 @@
     "underscore": "~1.8.3"
   },
   "devDependencies": {
-    "vinyl-source-stream": "~1.1.0",
-    "gulp-sourcemaps": "~1.5.2",
-    "vinyl-buffer": "~1.0.0",
-    "watchify": "~3.3.1",
-    "gulp": "~3.9.0",
+    "babel": "^5.8.21",
+    "babelify": "~6.1.3",
     "browserify": "~11.0.1",
-    "babelify": "~6.1.3"
+    "gulp": "~3.9.0",
+    "gulp-sourcemaps": "~1.5.2",
+    "should": "^7.0.2",
+    "vinyl-buffer": "~1.0.0",
+    "vinyl-source-stream": "~1.1.0",
+    "watchify": "~3.3.1"
   },
   "private": true
 }
