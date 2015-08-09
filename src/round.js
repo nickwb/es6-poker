@@ -30,6 +30,7 @@ export default class Round {
 		let currentBest = this.getPlayerCurrentBestHand();
 
 		let outlook = new HandOutlook(currentBest.score().points);
+		outlook.setTotalCombinations(combo.nCr(unseen.length, 2));
 
 		for(let extras of combo.getCombinationsM(unseen, 2, 1)) {
 			let combinedSet = seen.concat(...extras);
@@ -47,6 +48,7 @@ export default class Round {
 		let currentBest = this.getPlayerCurrentBestHand();
 
 		let outlook = new HandOutlook(currentBest.score().points);
+		outlook.setTotalCombinations(combo.nCr(unseen.length, 2));
 
 		for(let pocketCards of combo.getCombinations(unseen, 2)) {
 			let pocket = new Pocket(pocketCards);

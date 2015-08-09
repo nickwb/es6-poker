@@ -42,6 +42,22 @@ function* _getCombinations(list, n, initialSet = -1) {
 	}
 }
 
+// Borrowed from: https://github.com/dankogai/js-combinatorics
+function nPr(m, n) {
+    var t, p = 1;
+    if (m < n) {
+        t = m;
+        m = n;
+        n = t;
+    }
+    while (n--) p *= m--;
+    return p;
+}
+
+function nCr(m, n) {
+    return nPr(m, n) / nPr(n, n);
+}
+
 class IteratorWrapper {
     constructor(it) {
         this._it = it;
@@ -61,5 +77,6 @@ class IteratorWrapper {
 
 export default {
     getCombinations: (list, n) => new IteratorWrapper(_getCombinations(list, n)),
-    getCombinationsM: (list, n, initialSet) => new IteratorWrapper(_getCombinations(list, n, initialSet))
+    getCombinationsM: (list, n, initialSet) => new IteratorWrapper(_getCombinations(list, n, initialSet)),
+	nCr: nCr
 };
