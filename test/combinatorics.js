@@ -30,11 +30,14 @@ describe('combinatorics', () => {
             {n: 10, r: 7, result: 120},
             {n: 10, r: 8, result: 45},
             {n: 10, r: 9, result: 10},
-            {n: 10, r: 10, result: 1}
+            {n: 10, r: 10, result: 1},
+            {n: 52, r: 2, result: 1326},
+            {n: 52, r: 5, result: 2598960},
+            {n: 52, r: 7, result: 133784560}
         ];
 
         tests.forEach(t => {
-            it(`Should have the expected outcome of ${t.result} for ${t.n}C${t.r}`, () => {
+            it(`Should have the expected outcome of ${t.result} for ${t.n} C ${t.r}`, () => {
                 combo.nCr(t.n, t.r).should.be.exactly(t.result);
             });
         });
@@ -59,7 +62,7 @@ describe('combinatorics', () => {
         ];
 
         tests.forEach(t => {
-            it(`Should have the expected combinations for ${t.n}C${t.r}`, () => {
+            it(`Should have the expected array combinations for ${t.n} C ${t.r}`, () => {
                 let arr = _.range(t.n);
                 let combinations = combo.getCombinations(arr, t.r).toArray();
                 combinations.length.should.be.exactly(combo.nCr(t.n, t.r));
