@@ -2,6 +2,27 @@
 import _ from 'underscore';
 
 function* _getCombinations(list, n, initialSet = -1) {
+
+	if(!_.isArray(list)) {
+		throw new TypeError('You must provide an array.');
+	}
+
+	if(!_.isNumber(n) || !_.isFinite(n) || n <= 0) {
+		throw new TypeError('n must be a finite number greater than zero.');
+	}
+
+	if(!_.isNumber(initialSet) || !_.isFinite(initialSet) || (initialSet !== -1 && initialSet <= 0)) {
+		throw new TypeError('initialSet must be a finite number greater than zero.');
+	}
+
+	if(n > list.length) {
+		throw new RangeError('n must be less than or equal to the length of the array.');
+	}
+
+	if(initialSet > list.length) {
+		throw new RangeError('initialSet must be less than or equal to the length of the array.');
+	}
+
 	let indices = [];
 	_.range(n).forEach(x => indices.push(n - (x + 1)));
 
@@ -31,7 +52,7 @@ function* _getCombinations(list, n, initialSet = -1) {
 		if(initialSet !== -1) {
 			let valid = false;
 			for(let i = 0; i < n; i++) {
-				if(indices[i] <= initialSet) {
+				if(indices[i] < initialSet) {
 					valid = true;
 					break;
 				}
@@ -43,19 +64,43 @@ function* _getCombinations(list, n, initialSet = -1) {
 }
 
 // Borrowed from: https://github.com/dankogai/js-combinatorics
-function nPr(m, n) {
-    var t, p = 1;
-    if (m < n) {
-        t = m;
-        m = n;
-        n = t;
+function nPr(n, r) {
+	if(!_.isNumber(n) || !_.isFinite(n) || n <= 0) {
+		throw new TypeError('n must be a finite number greater than zero.');
+	}
+
+	if(!_.isNumber(r) || !_.isFinite(r) || r <= 0) {
+		throw new TypeError('r must be a finite number greater than zero.');
+	}
+
+	if(r > n) {
+		throw new RangeError('r must be less than or equal to n.');
+	}
+
+	var t, p = 1;
+    if (n < r) {
+        t = n;
+        n = r;
+        r = t;
     }
-    while (n--) p *= m--;
+    while (r--) p *= n--;
     return p;
 }
 
-function nCr(m, n) {
-    return nPr(m, n) / nPr(n, n);
+function nCr(n, r) {
+	if(!_.isNumber(n) || !_.isFinite(n) || n <= 0) {
+		throw new TypeError('n must be a finite number greater than zero.');
+	}
+
+	if(!_.isNumber(r) || !_.isFinite(r) || r <= 0) {
+		throw new TypeError('r must be a finite number greater than zero.');
+	}
+
+	if(r > n) {
+		throw new RangeError('r must be less than or equal to n.');
+	}
+
+    return nPr(n, r) / nPr(r, r);
 }
 
 class IteratorWrapper {

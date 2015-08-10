@@ -32,7 +32,7 @@ export default class Round {
 		let outlook = new HandOutlook(currentBest.score().points);
 		outlook.setTotalCombinations(combo.nCr(unseen.length, 2));
 
-		for(let extras of combo.getCombinationsM(unseen, 2, 1)) {
+		for(let extras of combo.getCombinationsM(unseen, 2, 2)) {
 			let combinedSet = seen.concat(...extras);
 			for(let cardArray of combo.getCombinations(combinedSet, 5)) {
 				let hand = new Hand(cardArray, this.pocket);
